@@ -1,0 +1,43 @@
+version: '3'
+services:
+  web:
+    image: nginx:1.17-alpine # nginxのimageにnginx:1.17-alpineを指定
+    container_name: learning_web
+    ports:
+      - '80:80' # ホストの80ポートでwebコンテナの80にアクセス
+    volumes:
+      - ./docker/web/default.conf:/etc/nginx/conf.d/default.conf # 作成したdefault.confを/etc/
+      - .:/var/www/html # webコンテナの/var/wwwにマウント
+      - ./acrovision_e_learning/laravel/storage/app/public:/var/www/storage # storageコンテナにマウント
+    depends_on: # コンテナの依存関係を定義する
+      - app # appの起動後にnginxを起動
+  app:
+    build: ./docker/php # ./docker/php/Dockerfileをbuildしてイメージ作成
+    container_name: learning_server
+    volumes:
+      - .:/var/www/html # appコンテナの/var/wwwにマウント
+    depends_on: # コンテナの依存関係を定義する
+      - mysql # mysqlの起動後にnginxを起動
+  mysql:
+    image: mariadb:10.5.4 
+    container_name: learning_db
+    environment:
+      MYSQL_DATABASE: acrovision_e_learning
+      MYSQL_USER: acrovision
+      MYSQL_PASSWORD: BSpass1234
+      MYSQL_ROOT_PASSWORD: f3xz94re
+    volumes:
+      - ./docker/db/initdb.d:/docker-entrypoint-initdb.d # 初期化としてSQLを実行
+      - ./docker/db/conf.d:/etc/mysql/conf.d # mysqlの設定ファイルをマウント
+  # phpMyAdmin のコンテナ
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin:latest
+    container_name: learning_phpmyadmin
+    environment:
+      PMA_HOST: mysql
+      PMA_USER: acrovision
+      PMA_PASSWORD: BSpass1234
+    ports:
+      - "8080:80"
+    links: 
+      - mysql

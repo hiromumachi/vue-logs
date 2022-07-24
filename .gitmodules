@@ -1,0 +1,3 @@
+[submodule "acrovision_e_learning"]
+	path = acrovision_e_learning
+	url = https://github.com/acro-masumura/acrovision_e_learning.git
